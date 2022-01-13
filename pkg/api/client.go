@@ -90,17 +90,17 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// AddCommands request with any body
-	AddCommandsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// AddCommand request with any body
+	AddCommandWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	AddCommands(ctx context.Context, body AddCommandsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	AddCommand(ctx context.Context, body AddCommandJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListCommandQueue request
 	ListCommandQueue(ctx context.Context, host string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) AddCommandsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddCommandsRequestWithBody(c.Server, contentType, body)
+func (c *Client) AddCommandWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddCommandRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -111,8 +111,8 @@ func (c *Client) AddCommandsWithBody(ctx context.Context, contentType string, bo
 	return c.Client.Do(req)
 }
 
-func (c *Client) AddCommands(ctx context.Context, body AddCommandsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewAddCommandsRequest(c.Server, body)
+func (c *Client) AddCommand(ctx context.Context, body AddCommandJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewAddCommandRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -135,19 +135,19 @@ func (c *Client) ListCommandQueue(ctx context.Context, host string, reqEditors .
 	return c.Client.Do(req)
 }
 
-// NewAddCommandsRequest calls the generic AddCommands builder with application/json body
-func NewAddCommandsRequest(server string, body AddCommandsJSONRequestBody) (*http.Request, error) {
+// NewAddCommandRequest calls the generic AddCommand builder with application/json body
+func NewAddCommandRequest(server string, body AddCommandJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewAddCommandsRequestWithBody(server, "application/json", bodyReader)
+	return NewAddCommandRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewAddCommandsRequestWithBody generates requests for AddCommands with any type of body
-func NewAddCommandsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewAddCommandRequestWithBody generates requests for AddCommand with any type of body
+func NewAddCommandRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -252,22 +252,22 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// AddCommands request with any body
-	AddCommandsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddCommandsResponse, error)
+	// AddCommand request with any body
+	AddCommandWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddCommandResponse, error)
 
-	AddCommandsWithResponse(ctx context.Context, body AddCommandsJSONRequestBody, reqEditors ...RequestEditorFn) (*AddCommandsResponse, error)
+	AddCommandWithResponse(ctx context.Context, body AddCommandJSONRequestBody, reqEditors ...RequestEditorFn) (*AddCommandResponse, error)
 
 	// ListCommandQueue request
 	ListCommandQueueWithResponse(ctx context.Context, host string, reqEditors ...RequestEditorFn) (*ListCommandQueueResponse, error)
 }
 
-type AddCommandsResponse struct {
+type AddCommandResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r AddCommandsResponse) Status() string {
+func (r AddCommandResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -275,7 +275,7 @@ func (r AddCommandsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r AddCommandsResponse) StatusCode() int {
+func (r AddCommandResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -304,21 +304,21 @@ func (r ListCommandQueueResponse) StatusCode() int {
 	return 0
 }
 
-// AddCommandsWithBodyWithResponse request with arbitrary body returning *AddCommandsResponse
-func (c *ClientWithResponses) AddCommandsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddCommandsResponse, error) {
-	rsp, err := c.AddCommandsWithBody(ctx, contentType, body, reqEditors...)
+// AddCommandWithBodyWithResponse request with arbitrary body returning *AddCommandResponse
+func (c *ClientWithResponses) AddCommandWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddCommandResponse, error) {
+	rsp, err := c.AddCommandWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseAddCommandsResponse(rsp)
+	return ParseAddCommandResponse(rsp)
 }
 
-func (c *ClientWithResponses) AddCommandsWithResponse(ctx context.Context, body AddCommandsJSONRequestBody, reqEditors ...RequestEditorFn) (*AddCommandsResponse, error) {
-	rsp, err := c.AddCommands(ctx, body, reqEditors...)
+func (c *ClientWithResponses) AddCommandWithResponse(ctx context.Context, body AddCommandJSONRequestBody, reqEditors ...RequestEditorFn) (*AddCommandResponse, error) {
+	rsp, err := c.AddCommand(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseAddCommandsResponse(rsp)
+	return ParseAddCommandResponse(rsp)
 }
 
 // ListCommandQueueWithResponse request returning *ListCommandQueueResponse
@@ -330,15 +330,15 @@ func (c *ClientWithResponses) ListCommandQueueWithResponse(ctx context.Context, 
 	return ParseListCommandQueueResponse(rsp)
 }
 
-// ParseAddCommandsResponse parses an HTTP response from a AddCommandsWithResponse call
-func ParseAddCommandsResponse(rsp *http.Response) (*AddCommandsResponse, error) {
+// ParseAddCommandResponse parses an HTTP response from a AddCommandWithResponse call
+func ParseAddCommandResponse(rsp *http.Response) (*AddCommandResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &AddCommandsResponse{
+	response := &AddCommandResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

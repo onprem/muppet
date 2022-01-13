@@ -36,7 +36,7 @@ paths:
       tags:
         - commandsv1
       summary: add command for a host to the queue
-      operationId: addCommands
+      operationId: addCommand
       description: Add given command to the queue of a host
       responses:
         '200':

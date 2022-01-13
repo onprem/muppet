@@ -18,8 +18,8 @@ type RequestCommand struct {
 	ShellCommand string `json:"shell_command"`
 }
 
-// AddCommandsJSONBody defines parameters for AddCommands.
-type AddCommandsJSONBody RequestCommand
+// AddCommandJSONBody defines parameters for AddCommand.
+type AddCommandJSONBody RequestCommand
 
-// AddCommandsJSONRequestBody defines body for AddCommands for application/json ContentType.
-type AddCommandsJSONRequestBody AddCommandsJSONBody
+// AddCommandJSONRequestBody defines body for AddCommand for application/json ContentType.
+type AddCommandJSONRequestBody AddCommandJSONBody

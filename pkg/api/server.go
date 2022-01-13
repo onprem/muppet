@@ -15,7 +15,7 @@ import (
 type ServerInterface interface {
 	// add command for a host to the queue
 	// (POST /api/v1/commands)
-	AddCommands(w http.ResponseWriter, r *http.Request)
+	AddCommand(w http.ResponseWriter, r *http.Request)
 	// lists the current command queue for a host
 	// (GET /api/v1/commands/queue/{host})
 	ListCommandQueue(w http.ResponseWriter, r *http.Request, host string)
@@ -30,12 +30,12 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.HandlerFunc) http.HandlerFunc
 
-// AddCommands operation middleware
-func (siw *ServerInterfaceWrapper) AddCommands(w http.ResponseWriter, r *http.Request) {
+// AddCommand operation middleware
+func (siw *ServerInterfaceWrapper) AddCommand(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var handler = func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.AddCommands(w, r)
+		siw.Handler.AddCommand(w, r)
 	}
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -185,7 +185,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/api/v1/commands", wrapper.AddCommands)
+		r.Post(options.BaseURL+"/api/v1/commands", wrapper.AddCommand)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/v1/commands/queue/{host}", wrapper.ListCommandQueue)
