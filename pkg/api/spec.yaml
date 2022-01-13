@@ -1,0 +1,81 @@
+openapi: 3.0.0
+info:
+  description: The Muppet Service API
+  version: "0.0.1"
+  title: Muppet Service API
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: commandsv1
+    description: Calls related to commands
+paths:
+  /api/v1/commands/queue/{host}:
+    parameters:
+      - in: path
+        name: host
+        description: name of the host
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - commandsv1
+      summary: lists the current command queue for a host
+      operationId: listCommandQueue
+      description: You can list the current commands in queue for a host
+      responses:
+        '200':
+          description: he current commands in queue for a host
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Commands'
+  /api/v1/commands:
+    post:
+      tags:
+        - commandsv1
+      summary: add command for a host to the queue
+      operationId: addCommands
+      description: Add given command to the queue of a host
+      responses:
+        '200':
+          description: command added to queue
+        '400':
+          description: invalid request body
+      requestBody:
+        description: Command to add to queue
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCommand'
+components:
+  schemas:
+    Commands:
+      type: array
+      items:
+        $ref: '#/components/schemas/Command'
+    Command:
+      type: object
+      required:
+        - shell_command
+        - uuid
+      properties:
+        shell_command:
+          type: string
+          example: 'apt update'
+        uuid:
+          type: string
+          example: '74f502b4-7328-11ec-a98d-69f6378cb88f'
+    RequestCommand:
+      type: object
+      required:
+        - shell_command
+        - host
+      properties:
+        shell_command:
+          type: string
+          example: 'apt update'
+        host:
+          type: string
+          example: '74f502b4-7328-11ec-a98d-69f6378cb88f'
