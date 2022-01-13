@@ -36,7 +36,7 @@ func testCommandStore(t *testing.T, s Store) {
 		err := s.AddCommand(host1, cmd1)
 		testutil.Ok(t, err)
 
-		cmds, err := s.GetCommandsWithStatus(host1, StatusPending)
+		cmds, err := s.GetPendingCommands(host1)
 		testutil.Ok(t, err)
 
 		testutil.Equals(t, 1, len(cmds))
@@ -50,13 +50,13 @@ func testCommandStore(t *testing.T, s Store) {
 		err = s.AddCommand(host2, cmd3)
 		testutil.Ok(t, err)
 
-		cmds, err := s.GetCommandsWithStatus(host1, StatusPending)
+		cmds, err := s.GetPendingCommands(host1)
 		testutil.Ok(t, err)
 
 		testutil.Equals(t, 2, len(cmds))
 		testutil.Equals(t, api.Commands{cmd1, cmd2}, cmds)
 
-		cmds, err = s.GetCommandsWithStatus(host2, StatusPending)
+		cmds, err = s.GetPendingCommands(host2)
 		testutil.Ok(t, err)
 
 		testutil.Equals(t, 1, len(cmds))
@@ -64,12 +64,12 @@ func testCommandStore(t *testing.T, s Store) {
 	})
 
 	t.Run("update status", func(t *testing.T) {
-		err := s.UpdateStatus(host1, cmd2.Uuid, StatusFinished)
+		err := s.MarkDone(host1, cmd2.Uuid, 0)
 		testutil.Ok(t, err)
 
-		cmds, err := s.GetCommandsWithStatus(host1, StatusFinished)
+		cmds, err := s.GetDoneCommands(host1)
 		testutil.Ok(t, err)
 
-		testutil.Equals(t, api.Commands{cmd2}, cmds)
+		testutil.Equals(t, []Command{{Cmd: cmd2}}, cmds)
 	})
 }
