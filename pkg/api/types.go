@@ -12,6 +12,12 @@ type Command struct {
 // Commands defines model for Commands.
 type Commands []Command
 
+// MarkCommand defines model for MarkCommand.
+type MarkCommand struct {
+	ExitStatus float32 `json:"exit_status"`
+	Uuid       string  `json:"uuid"`
+}
+
 // RequestCommand defines model for RequestCommand.
 type RequestCommand struct {
 	Host         string `json:"host"`
@@ -21,5 +27,11 @@ type RequestCommand struct {
 // AddCommandJSONBody defines parameters for AddCommand.
 type AddCommandJSONBody RequestCommand
 
+// MarkCommandDoneJSONBody defines parameters for MarkCommandDone.
+type MarkCommandDoneJSONBody MarkCommand
+
 // AddCommandJSONRequestBody defines body for AddCommand for application/json ContentType.
 type AddCommandJSONRequestBody AddCommandJSONBody
+
+// MarkCommandDoneJSONRequestBody defines body for MarkCommandDone for application/json ContentType.
+type MarkCommandDoneJSONRequestBody MarkCommandDoneJSONBody

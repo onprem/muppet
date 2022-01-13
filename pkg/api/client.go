@@ -95,6 +95,11 @@ type ClientInterface interface {
 
 	AddCommand(ctx context.Context, body AddCommandJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// MarkCommandDone request with any body
+	MarkCommandDoneWithBody(ctx context.Context, host string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	MarkCommandDone(ctx context.Context, host string, body MarkCommandDoneJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListCommandQueue request
 	ListCommandQueue(ctx context.Context, host string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
@@ -113,6 +118,30 @@ func (c *Client) AddCommandWithBody(ctx context.Context, contentType string, bod
 
 func (c *Client) AddCommand(ctx context.Context, body AddCommandJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAddCommandRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MarkCommandDoneWithBody(ctx context.Context, host string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMarkCommandDoneRequestWithBody(c.Server, host, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) MarkCommandDone(ctx context.Context, host string, body MarkCommandDoneJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMarkCommandDoneRequest(c.Server, host, body)
 	if err != nil {
 		return nil, err
 	}
@@ -156,6 +185,53 @@ func NewAddCommandRequestWithBody(server string, contentType string, body io.Rea
 	}
 
 	operationPath := fmt.Sprintf("/api/v1/commands")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewMarkCommandDoneRequest calls the generic MarkCommandDone builder with application/json body
+func NewMarkCommandDoneRequest(server string, host string, body MarkCommandDoneJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewMarkCommandDoneRequestWithBody(server, host, "application/json", bodyReader)
+}
+
+// NewMarkCommandDoneRequestWithBody generates requests for MarkCommandDone with any type of body
+func NewMarkCommandDoneRequestWithBody(server string, host string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "host", runtime.ParamLocationPath, host)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/commands/done/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -257,6 +333,11 @@ type ClientWithResponsesInterface interface {
 
 	AddCommandWithResponse(ctx context.Context, body AddCommandJSONRequestBody, reqEditors ...RequestEditorFn) (*AddCommandResponse, error)
 
+	// MarkCommandDone request with any body
+	MarkCommandDoneWithBodyWithResponse(ctx context.Context, host string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MarkCommandDoneResponse, error)
+
+	MarkCommandDoneWithResponse(ctx context.Context, host string, body MarkCommandDoneJSONRequestBody, reqEditors ...RequestEditorFn) (*MarkCommandDoneResponse, error)
+
 	// ListCommandQueue request
 	ListCommandQueueWithResponse(ctx context.Context, host string, reqEditors ...RequestEditorFn) (*ListCommandQueueResponse, error)
 }
@@ -276,6 +357,27 @@ func (r AddCommandResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AddCommandResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type MarkCommandDoneResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r MarkCommandDoneResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r MarkCommandDoneResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -321,6 +423,23 @@ func (c *ClientWithResponses) AddCommandWithResponse(ctx context.Context, body A
 	return ParseAddCommandResponse(rsp)
 }
 
+// MarkCommandDoneWithBodyWithResponse request with arbitrary body returning *MarkCommandDoneResponse
+func (c *ClientWithResponses) MarkCommandDoneWithBodyWithResponse(ctx context.Context, host string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*MarkCommandDoneResponse, error) {
+	rsp, err := c.MarkCommandDoneWithBody(ctx, host, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMarkCommandDoneResponse(rsp)
+}
+
+func (c *ClientWithResponses) MarkCommandDoneWithResponse(ctx context.Context, host string, body MarkCommandDoneJSONRequestBody, reqEditors ...RequestEditorFn) (*MarkCommandDoneResponse, error) {
+	rsp, err := c.MarkCommandDone(ctx, host, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseMarkCommandDoneResponse(rsp)
+}
+
 // ListCommandQueueWithResponse request returning *ListCommandQueueResponse
 func (c *ClientWithResponses) ListCommandQueueWithResponse(ctx context.Context, host string, reqEditors ...RequestEditorFn) (*ListCommandQueueResponse, error) {
 	rsp, err := c.ListCommandQueue(ctx, host, reqEditors...)
@@ -339,6 +458,22 @@ func ParseAddCommandResponse(rsp *http.Response) (*AddCommandResponse, error) {
 	}
 
 	response := &AddCommandResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseMarkCommandDoneResponse parses an HTTP response from a MarkCommandDoneWithResponse call
+func ParseMarkCommandDoneResponse(rsp *http.Response) (*MarkCommandDoneResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &MarkCommandDoneResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

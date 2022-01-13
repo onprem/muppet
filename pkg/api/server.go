@@ -16,6 +16,9 @@ type ServerInterface interface {
 	// add command for a host to the queue
 	// (POST /api/v1/commands)
 	AddCommand(w http.ResponseWriter, r *http.Request)
+	// mark a command done
+	// (POST /api/v1/commands/done/{host})
+	MarkCommandDone(w http.ResponseWriter, r *http.Request, host string)
 	// lists the current command queue for a host
 	// (GET /api/v1/commands/queue/{host})
 	ListCommandQueue(w http.ResponseWriter, r *http.Request, host string)
@@ -36,6 +39,32 @@ func (siw *ServerInterfaceWrapper) AddCommand(w http.ResponseWriter, r *http.Req
 
 	var handler = func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.AddCommand(w, r)
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler(w, r.WithContext(ctx))
+}
+
+// MarkCommandDone operation middleware
+func (siw *ServerInterfaceWrapper) MarkCommandDone(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "host" -------------
+	var host string
+
+	err = runtime.BindStyledParameter("simple", false, "host", chi.URLParam(r, "host"), &host)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "host", Err: err})
+		return
+	}
+
+	var handler = func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.MarkCommandDone(w, r, host)
 	}
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -186,6 +215,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/v1/commands", wrapper.AddCommand)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/v1/commands/done/{host}", wrapper.MarkCommandDone)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/api/v1/commands/queue/{host}", wrapper.ListCommandQueue)
