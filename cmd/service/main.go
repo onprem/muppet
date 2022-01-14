@@ -9,6 +9,10 @@ import (
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/oklog/run"
+
+	"github.com/onprem/muppet/pkg/api"
+	"github.com/onprem/muppet/pkg/server"
+	"github.com/onprem/muppet/pkg/store"
 )
 
 func main() {
@@ -23,10 +27,8 @@ func main() {
 
 	{
 		srv := &http.Server{
-			Addr: ":8080",
-			Handler: http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-				rw.Write([]byte("we are up!"))
-			}),
+			Addr:    ":8080",
+			Handler: api.Handler(server.NewServer(store.NewInMemStore())),
 		}
 
 		g.Add(func() error {

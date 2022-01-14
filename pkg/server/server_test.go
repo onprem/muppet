@@ -7,10 +7,11 @@ import (
 
 	"github.com/efficientgo/tools/core/pkg/testutil"
 	"github.com/onprem/muppet/pkg/api"
+	"github.com/onprem/muppet/pkg/store"
 )
 
 func TestServer(t *testing.T) {
-	handler := api.Handler(NewServer())
+	handler := api.Handler(NewServer(store.NewInMemStore()))
 
 	var data api.Commands
 
