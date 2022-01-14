@@ -6,12 +6,14 @@ import (
 	"testing"
 
 	"github.com/efficientgo/tools/core/pkg/testutil"
+	"github.com/go-kit/log"
+
 	"github.com/onprem/muppet/pkg/api"
 	"github.com/onprem/muppet/pkg/store"
 )
 
 func TestServer(t *testing.T) {
-	handler := api.Handler(NewServer(store.NewInMemStore()))
+	handler := api.Handler(NewServer(store.NewInMemStore(), log.NewNopLogger()))
 
 	var data api.Commands
 

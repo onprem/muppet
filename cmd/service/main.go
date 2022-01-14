@@ -28,7 +28,7 @@ func main() {
 	{
 		srv := &http.Server{
 			Addr:    ":8080",
-			Handler: api.Handler(server.NewServer(store.NewInMemStore())),
+			Handler: api.Handler(server.NewServer(store.NewInMemStore(), logger)),
 		}
 
 		g.Add(func() error {

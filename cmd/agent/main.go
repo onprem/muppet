@@ -61,6 +61,12 @@ func main() {
 	g.Add(run.SignalHandler(ctx, os.Interrupt))
 
 	{
+		level.Info(logger).Log("msg", "starting command agent", "hostname", cfg.hostname, "serviceURL", cfg.serviceURL)
+
+		if err := fetchAndRun(ctx, client, cfg.hostname, logger); err != nil {
+			level.Error(logger).Log("msg", "fetch and run commands", "err", err)
+		}
+
 		g.Add(func() error {
 			ticker := time.NewTicker(time.Duration(cfg.interval) * time.Second)
 			for {

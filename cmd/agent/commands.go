@@ -16,13 +16,15 @@ func fetchAndRun(ctx context.Context, client *api.ClientWithResponses, hostname 
 		return err
 	}
 
+	level.Debug(logger).Log("msg", "fetched commands from queue", "got", len(*resp.JSON200))
+
 	for _, v := range *resp.JSON200 {
-		logger = log.With(logger, "uuid", v.Uuid, "command", v.ShellCommand)
+		lg := log.With(logger, "uuid", v.Uuid, "command", v.ShellCommand)
 
 		cmd := exec.CommandContext(ctx, "sh", "-c", v.ShellCommand)
 		_ = cmd.Run()
 
-		level.Info(logger).Log("msg", "ran command", "exitcode", cmd.ProcessState.ExitCode())
+		level.Info(lg).Log("msg", "ran command", "exitcode", cmd.ProcessState.ExitCode())
 
 		_, err := client.MarkCommandDone(
 			ctx,
@@ -31,7 +33,7 @@ func fetchAndRun(ctx context.Context, client *api.ClientWithResponses, hostname 
 		)
 
 		if err != nil {
-			level.Error(logger).Log("msg", "marking command as done", "err", err)
+			level.Error(lg).Log("msg", "marking command as done", "err", err)
 		}
 	}
 
