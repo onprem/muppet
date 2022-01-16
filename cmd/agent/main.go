@@ -47,6 +47,8 @@ func main() {
 		return
 	}
 
+	logger = log.With(logger, "hostname", cfg.hostname)
+
 	client, err := api.NewClientWithResponses(cfg.serviceURL)
 	if err != nil {
 		level.Error(logger).Log("msg", "creating API client", "err", err)

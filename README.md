@@ -18,6 +18,8 @@ This project contains two applications:
 
 ## Usage
 
+> Take a look at [demo.sh](./demo.sh) for a quick start script.
+
 You need to run one instance of `muppet-service` in a cental place and on avery host server, a `command-agent`. The command agent will constantly poll the `muppet-service` for commands to run for the specified hostname.
 
 ### Adding commands for a host
