@@ -1,0 +1,23 @@
+FROM golang:1.17.6-alpine3.15 as builder
+
+RUN apk add --update --no-cache ca-certificates tzdata git make bash && update-ca-certificates
+
+WORKDIR /opt
+
+COPY go.mod /opt
+COPY go.sum /opt
+
+RUN go mod download
+
+ADD . /opt
+
+RUN make build-agent
+
+FROM alpine:3.15 as runner
+
+RUN apk add --update --no-cache bash
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /opt/command-agent /bin/command-agent
+
+ENTRYPOINT ["/bin/command-agent"]
