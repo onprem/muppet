@@ -47,6 +47,13 @@ or by running it using docker
 docker run -p 8080:8080 onprem/muppet-service
 ```
 
+[embedmd]:# (tmp/help-service.txt)
+```txt
+Usage of ./muppet-service:
+      --address string   The address to start the HTTP server on. (default "0.0.0.0:8080")
+pflag: help requested
+```
+
 ### Command Agent
 
 You can run it by running the binary on the host
@@ -63,8 +70,7 @@ docker run onprem/command-agent --hostname=host001 --service-url=http://muppet-s
 
 > NOTE: If you use docker to run the command agent, the commands will be executed inside the container.
 
-[embedmd]: # "tmp/help-agent.txt"
-
+[embedmd]:# (tmp/help-agent.txt)
 ```txt
 Usage of ./command-agent:
       --hostname string      The hostname to fetch commands for.

@@ -59,10 +59,13 @@ pkg/api/client.go: $(OAPI_CODEGEN) pkg/api/spec.yaml
 pkg/api/types.go: $(OAPI_CODEGEN) pkg/api/spec.yaml
 	$(OAPI_CODEGEN) -generate types -package api pkg/api/spec.yaml | gofmt -s > $@
 
+$(TMP_DIR)/help-service.txt: $(SERVICE_BIN_NAME) $(TMP_DIR)
+	./$(SERVICE_BIN_NAME) --help &> $(TMP_DIR)/help-service.txt || true
+
 $(TMP_DIR)/help-agent.txt: $(AGENT_BIN_NAME) $(TMP_DIR)
 	./$(AGENT_BIN_NAME) --help &> $(TMP_DIR)/help-agent.txt || true
 
-README.md: $(EMBEDMD) $(TMP_DIR)/help-agent.txt
+README.md: $(EMBEDMD) $(TMP_DIR)/help-service.txt $(TMP_DIR)/help-agent.txt
 	$(EMBEDMD) -w README.md
 
 
