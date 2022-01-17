@@ -5,11 +5,11 @@ A poor man's distributed puppet service.
 This project contains two applications:
 
 - `muppet-service`: An HTTP service that listens for requests to run commands on hosts.
-- `command-agent`: An agent that runs on hosts and polls `muppet-service` for any commands that it need ti run on the host.
+- `command-agent`: An agent that runs on hosts and polls `muppet-service` for any commands that it need to run on the host.
 
 ## Building
 
-- The project is written in Go. You'll need to Go toolchain installed on your machine. See: [https://go.dev/doc/install](https://go.dev/doc/install).
+- The project is written in Go. You'll need the Go toolchain installed on your machine. See: [https://go.dev/doc/install](https://go.dev/doc/install).
 - Run `make build` to build both binaries. Or you can build the service binary by running `go build ./cmd/service`, and similarly the agent binary by running `go build ./cmd/agent` directly.
 
 ### Building containers
@@ -20,7 +20,7 @@ This project contains two applications:
 
 > Take a look at [demo.sh](./demo.sh) for a quick start script.
 
-You need to run one instance of `muppet-service` in a cental place and on avery host server, a `command-agent`. The command agent will constantly poll the `muppet-service` for commands to run for the specified hostname.
+You need to run one instance of `muppet-service` in a cental place and on every host server, a `command-agent`. The command agent will constantly poll the `muppet-service` for commands to run for the specified hostname.
 
 ### Adding commands for a host
 
@@ -30,7 +30,7 @@ You can add a command to the service by using the follwing `curl` request:
 curl --header "Content-Type: application/json" \
       --request POST \
       --data '{"shell_command": "apt update", "host": "host001"}' \
-      localhost:8080/api/v1/commands
+      http://localhost:8080/api/v1/commands
 ```
 
 For a full reference of the API, take a look at the [OpenAPI spec here](./pkg/api/spec.yaml).
